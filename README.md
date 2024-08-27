@@ -1,16 +1,22 @@
-# weather_forecast
+# Weather Forecast App
 
-A new Flutter project.
+## Features
+- Displays real-time weather data for the user's current location.
+- Allows users to search for weather data in other cities.
+- Shows temperature, weather conditions, humidity, and wind speed.
 
-## Getting Started
+## Setup
+1. Clone the repository.
+2. Run `flutter pub get` to install dependencies.
+3. Replace `YOUR_API_KEY_HERE` with your actual API key.
+4. Run the app using `flutter run`.
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Dependencies
+- `http`: For API requests.
+- `location`: For getting the user's current location.
+- `geocoding`: For converting latitude and longitude into readable addresses.
+- `lottie`: For displaying animations.
+- `csc_picker`: For selecting country, state, and city.
+- `connectivity_plus`: For checking network connectivity.
+- `flutter_dotenv`: For managing environment variables securely, such as API keys.
+  
