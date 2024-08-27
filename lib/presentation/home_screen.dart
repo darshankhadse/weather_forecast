@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
 import '../api/weather_service.dart';
+import '../utils/connectivity_service.dart';
 import '../utils/location.dart';
 import 'search_screen.dart';
 
@@ -16,6 +17,7 @@ class _HomeScreenState extends State<HomeScreen> {
   var isLoading = true;
   final WeatherService weatherService = WeatherService();
   final LocationService locationService = LocationService();
+  final ConnectivityService connectivityService = ConnectivityService();
   Map<String, dynamic>? weatherData;
   String? errorMessage;
   String? address;
@@ -23,7 +25,17 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    fetchWeatherForCurrentLocation();
+    connectivityService.connectivityStream.listen((isConnected) {
+      if (isConnected) {
+        fetchWeatherForCurrentLocation();
+      } else {
+        setState(() {
+          isLoading = false;
+          weatherData = null;
+          errorMessage = 'No internet connection';
+        });
+      }
+    });
   }
 
   Future<void> fetchWeatherForCurrentLocation() async {
@@ -48,64 +60,83 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Weather Forecast'),
-          actions: [
-            IconButton(
-                onPressed: () async{
-                  final selectedCity = await Navigator.of(context).push(
-                    MaterialPageRoute(
-                        builder: (BuildContext context) =>
-                        const SearchScreen()),
-                  );
-                  if (selectedCity != null) {
-                    weatherData = await weatherService.fetchWeatherByCity(
-                        selectedCity);
-                    setState(() {
-                      address = weatherData!['name'];
-                    });
-                  }
-                },
-                icon: const Icon(Icons.search))
+        body: Stack(
+          children: [
+            LottieBuilder.asset(
+              'assets/background.json',
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: double.infinity,
+            ),
+            isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : weatherData != null
+                    ? weatherContent()
+                    : Center(
+                        child:
+                            Text(errorMessage ?? 'Failed to load weather data'),
+                      ),
           ],
         ),
-        body: isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : weatherData != null
-                ? weatherContent()
-                : Center(
-                    child: Text(errorMessage ?? 'Failed to load weather data'),
-                  ),
+        floatingActionButton: FloatingActionButton(
+            backgroundColor: Colors.yellow.shade100,
+            child: const Icon(Icons.search),
+            onPressed: () async {
+              final selectedCity = await Navigator.of(context).push(
+                MaterialPageRoute(
+                    builder: (BuildContext context) => const SearchScreen()),
+              );
+              if (selectedCity != null) {
+                weatherData =
+                    await weatherService.fetchWeatherByCity(selectedCity);
+                setState(() {
+                  address = weatherData!['name'];
+                });
+              }
+            }),
       ),
     );
   }
 
   Widget weatherContent() {
-    return Row(
-      children: [
-        Expanded(
-          child: Column(
-            mainAxisSize: MainAxisSize.max,
-            //mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          LottieBuilder.asset(
+              getWeatherAnimation('${weatherData!['weather'][0]['main']}')),
+          const SizedBox(height: 40.0),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              LottieBuilder.asset(getWeatherAnimation(
-                  '${weatherData!['weather'][0]['main']}')),
-              const SizedBox(height: 40.0),
+              const Icon(Icons.location_on),
               Text(
-                'Current Weather in $address',
+                address!,
                 style: const TextStyle(
                     fontSize: 22.0, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 20.0),
+            ],
+          ),
+          const SizedBox(height: 20.0),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
               Text('Temperature: ${weatherData!['main']['temp']}°C'),
               Text('Condition: ${weatherData!['weather'][0]['description']}'),
+            ],
+          ),
+          const SizedBox(height: 10.0),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
               Text('Humidity: ${weatherData!['main']['humidity']}%'),
               Text('Wind Speed: ${weatherData!['wind']['speed']} m/s'),
             ],
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

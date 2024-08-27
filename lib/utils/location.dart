@@ -31,17 +31,13 @@ class LocationService {
 
       if (placemarks.isNotEmpty) {
         geocode.Placemark place = placemarks.reversed.last;
-        String areaName = place.subLocality ?? '';
         String city = place.locality ?? '';
-        String address = '$areaName, $city';
-        print("Your Address for ($lat, $long) is: $address");
+        String address = city;
         return address;
       } else {
-        print("No placemarks found for the provided coordinates.");
         return "No Address";
       }
     } catch (e) {
-      print("Error getting placemarks: $e");
       return "No Address";
     }
   }
