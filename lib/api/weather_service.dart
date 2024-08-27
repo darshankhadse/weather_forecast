@@ -5,7 +5,7 @@ class WeatherService {
   final String apiKey = 'aef721754e232c693d92f12559c0dcfb';
   final String baseUrl = 'https://api.openweathermap.org/data/2.5/weather';
 
-  Future<Map<String, dynamic>> fetchWeather(String city) async {
+  Future<Map<String, dynamic>> fetchWeatherByCity(String city) async {
     final url = '$baseUrl?q=$city&appid=$apiKey&units=metric';
     final response = await http.get(Uri.parse(url));
 
